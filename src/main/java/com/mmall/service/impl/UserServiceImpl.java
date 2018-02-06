@@ -88,6 +88,7 @@ public class UserServiceImpl implements IUserService {
 
     @Override
     public ServerResponse<String> selectQuestion(String username) {
+        // 检查用户合法性
         ServerResponse validResponse = this.checkValid(username, Const.USERNAME);
         if (validResponse.isSuccess()) {
             return ServerResponse.createByErrorMessage("user doesn't exist.");
@@ -104,10 +105,40 @@ public class UserServiceImpl implements IUserService {
         int resultCount = userMapper.checkAnswer(username, question, answer);
         if (resultCount > 0) {
             String forgetToken = UUID.randomUUID().toString();
-            TokenCache.setKey("token_" + username, forgetToken);// "token" 前缀，也可以用来表示namespace
+            TokenCache.setKey(TokenCache.TOKEN_PREFIX + username, forgetToken);// "token" 前缀，也可以用来表示namespace
             return ServerResponse.createBySuccessMessage(forgetToken);
         }
         return ServerResponse.createByErrorMessage("error answer for your question.");
 
+    }
+
+    @Override
+    public ServerResponse<String> forgetResetPassword(String username, String passwordNew, String forgetToken){
+        if (StringUtils.isBlank(forgetToken)) {
+            return ServerResponse.createByErrorMessage("参数错误，token需要传递");
+        }
+
+        ServerResponse validResponse = this.checkValid(username, Const.USERNAME);
+        if (validResponse.isSuccess()) {
+            return ServerResponse.createByErrorMessage("user doesn't exist.");
+        }
+
+        String token = TokenCache.getKey(TokenCache.TOKEN_PREFIX + username);
+        if (StringUtils.isBlank(token)) {
+            return ServerResponse.createByErrorMessage("token 无效或者过期");
+        }
+
+        if (StringUtils.equals(forgetToken, token)) {
+            String md5Password = MD5Util.MD5EncodeUtf8(passwordNew);
+            int rowCout = userMapper.updatePasswordByUsername(username, md5Password);
+
+            if (rowCout > rowCout) {
+                return ServerResponse.createBySuccessMessage("修改密码成功");
+            }
+        }else{
+            return ServerResponse.createByErrorMessage("token 错误，请重新获取重置密码的token");
+        }
+
+        return ServerResponse.createByErrorMessage("修改密码失败");
     }
 }
