@@ -17,6 +17,7 @@ public class PropertiesUtil {
 
     private static Properties props;
 
+    // tomact 在启动时就初始化好了。
     static {
         String fileName = "mmall.properties";
         props = new Properties();
