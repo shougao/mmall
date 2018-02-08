@@ -1,4 +1,4 @@
-package com.mmall.controller.portal;
+package com.mmall.controller.backend;
 
 import com.google.common.collect.Maps;
 import com.mmall.common.Const;
@@ -26,7 +26,7 @@ import java.util.Map;
 
 @Controller
 @RequestMapping("/manage/product")
-public class ProductManagerController{
+public class ProductManageController {
 
 
 
